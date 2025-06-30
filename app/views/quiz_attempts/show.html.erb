@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Take Quiz</title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag 'application', media: 'all' %>
+</head>
+<body>
+  <div class="container">
+  	<br><br><br>
+    <h1>Quiz: <%= @quiz_attempt.quizz.name %></h1>
+
+    <%= form_with url: submit_quiz_attempt_path(@quiz_attempt), method: :post, local: true do |form| %>
+      <% @questions.each do |question| %>
+        <div class="question">
+          <h3><%= question.content %></h3>
+
+          <% question.options.each do |option| %>
+            <div class="form-check">
+              <%= form.radio_button "answers[#{question.id}]", option.content, id: "option_#{option.id}", class: "form-check-input" %>
+              <%= form.label "option_#{option.id}", option.content, class: "form-check-label" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= form.submit "Submit Quiz", class: "btn btn-success" %>
+    <% end %>
+  </div>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Home</title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-Gc4WF7x98RA9Sc63+4VvfHrTdSdrb0A/pQghuLgB1jexJ5a1D9gMprTkqg7tPyzH"
+    crossorigin="anonymous"
+  >
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #f0f8ff, #ffffff);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Roboto', sans-serif;
+    }
+    .home-container {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 100%;
+    }
+    .home-title {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 30px;
+    }
+    .btn-custom {
+      background-color: #007bff;
+      border-color: #007bff;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .btn-custom:hover {
+      background-color: #0056b3;
+      box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+    }
+    .auth-links {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .auth-links a {
+      text-decoration: none;
+      font-weight: bold;
+      color: #007bff;
+    }
+    .auth-links a:hover {
+      text-decoration: underline;
+    }
+     .success-icon {
+      font-size: 4rem;
+      color: #28a745;
+      margin-bottom: 20px;
+    }
+    .btn-secondary{
+      background: white;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="home-container">
+    <!-- Home Title -->
+    <div class="home-title">Welcome to MyQuiz</div>
+
+    <% if logged_in? %>
+      <!-- If user is logged in -->
+      <div class="auth-links">
+        <p>Hello, <%= current_user.first_name %>! You're logged in.</p>
+        <div class="success-icon">🎉😊👌</div>
+        <% if is_admin? %>
+        <%= button_to 'Create Quiz',quizz_path,method: :get ,class: 'btn btn-danger' %>
+        
+
+        <p>Or</p>
+         <%= button_to 'View all Quiz Questions',list_questions_path,method: :get ,class: 'btn btn-custom' %>
+        <br>
+        <% else %>
+         <%= button_to "Start Quiz", list_all_quiz_names_path,method: :get, class: "btn btn-custom btn-lg" %>
+         <br>
+         <br>
+         <%= link_to "View Quiz Attempts", view_all_quiz_attempts_path, class: "btn btn-secondary btn-lg" %>
+         <br>
+         <br>
+        <% end %>
+        <%= button_to 'Log Out', logout_path, method: :get, class: "btn btn-custom btn-lg" %>
+
+
+      </div>
+    <% else %>
+      <!-- If user is not logged in -->
+      <div class="auth-links">
+        <p>Please sign in to access your account.</p>
+        <a href="<%= login_path %>" class="btn btn btn-lg">Sign In</a>
+        <p>Don't have an account? <a href="<%= signup_path %>">Sign Up</a></p>
+      </div>
+    <% end %>
+  </div>
+</body>
+</html>

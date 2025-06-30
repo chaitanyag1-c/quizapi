@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Quiz</title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <%= stylesheet_link_tag 'application', media: 'all' %>
+  <%= javascript_include_tag 'application' %>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ensure only one checkbox is selected per question
+      document.querySelectorAll(".option-group").forEach((group) => {
+        const checkboxes = group.querySelectorAll("input[type='checkbox']");
+
+        checkboxes.forEach((checkbox) => {
+          checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+              checkboxes.forEach((box) => {
+                if (box !== checkbox) box.checked = false;
+              });
+            }
+          });
+        });
+      });
+
+      // Prevent form submission if no checkbox is selected
+      const form = document.querySelector("form");
+      form.addEventListener("submit", (event) => {
+        let valid = true;
+
+        document.querySelectorAll(".option-group").forEach((group) => {
+          const checkboxes = group.querySelectorAll("input[type='checkbox']");
+          const anyChecked = Array.from(checkboxes).some((checkbox) => checkbox.checked);
+
+          if (!anyChecked) {
+            valid = false;
+            group.classList.add("error");
+          } else {
+            group.classList.remove("error");
+          }
+        });
+
+        if (!valid) {
+          event.preventDefault();
+          alert("Please select at least one correct answer for each question.");
+        }
+      });
+
+      // Lookup functionality
+      const lookupButton = document.getElementById("lookup_button");
+      const quizNameField = document.getElementById("quiz_name");
+      const lookupList = document.getElementById("quiz_name_lookup");
+
+      lookupButton.addEventListener("click", () => {
+        const query = quizNameField.value.trim();
+
+
+        // Simulate fetching data from the backend (replace with real AJAX call)
+        fetch(`/quizzes/lookup?name=${query}`)
+          .then((response) => response.json())
+          .then((data) => {
+            lookupList.innerHTML = "";
+            lookupList.style.display = "block";
+
+            if (data.length === 0) {
+              lookupList.innerHTML = "<li class='list-group-item'>No matches found</li>";
+            } else {
+              data.forEach((quiz) => {
+                const item = document.createElement("li");
+                item.textContent = quiz.name;
+                item.className = "list-group-item";
+                item.addEventListener("click", () => {
+                  quizNameField.value = quiz.name;
+                  lookupList.style.display = "none";
+                });
+                lookupList.appendChild(item);
+              });
+            }
+          })
+          .catch((error) => {
+            alert("An error occurred while fetching quiz names.");
+            console.error(error);
+          });
+      });
+    });
+  </script>
+
+  <style>
+    .error {
+      border: 2px solid red;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    #quiz_name_lookup {
+      max-height: 150px;
+      overflow-y: auto;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Create a New Quiz</h1>
+
+    <%= form_with(model: @quizz, url: quizzes_path, local: true) do |form| %>
+
+      <% if @quizz.errors.any? %>
+        <div class="alert alert-danger">
+          <ul>
+            <% @quizz.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <!-- Quiz Name with Lookup -->
+      <div class="form-group">
+        <%= form.label :name, "Quiz Name" %>
+        <div class="input-group">
+          <%= form.text_field :name, id: "quiz_name", class: "form-control", placeholder: "Enter or select quiz name" %>
+          <button type="button" id="lookup_button" class="btn btn-secondary">Lookup</button>
+        </div>
+        <ul id="quiz_name_lookup" class="list-group" style="display: none; margin-top: 10px;"></ul>
+      </div>
+
+      <!-- Questions Section -->
+      <div class="form-group">
+        <%= form.fields_for :questions do |question_fields| %>
+          <h3>Question</h3>
+          <div class="form-group">
+            <%= question_fields.label :content, "Question Content" %>
+            <%= question_fields.text_area :content, class: "form-control", placeholder: "Enter the question" %>
+          </div>
+
+          <h4>Options</h4>
+
+          <div class="option-group">
+            <% 4.times do |i| %>
+              <div class="form-group">
+                <%= question_fields.fields_for :options, question_fields.object.options.build do |option_fields| %>
+                  <div class="option-fields">
+                    <%= option_fields.label :content, "Option #{i + 1}" %>
+                    <%= option_fields.text_field :content, class: "form-control", placeholder: "Option content" %>
+
+                    <%= option_fields.label :is_correct_option, "Correct?" %>
+                    <%= option_fields.check_box :is_correct_option %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+        <% end %>
+      </div>
+
+      <div class="form-group">
+        <%= form.submit "Create Quiz", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</body>
+</html>
